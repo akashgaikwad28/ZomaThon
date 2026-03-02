@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ZomaThon – ML Model Architecture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "neutral",
+            flowchart: {
+                curve: "basis",
+                padding: 20
+            }
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>ZomaThon ML Model Architecture</h1>
+        <div class="subtitle">
+            Candidate Retrieval → Feature Engineering → ML Ranking → Business Re-Ranking
+        </div>
+
+        <div class="mermaid">
+flowchart TD
+
+%% Style Definitions
+classDef cart fill:#FEF9C3,stroke:#CA8A04,stroke-width:2px;
+classDef retrieval fill:#E0F2FE,stroke:#0284C7,stroke-width:2px;
+classDef pool fill:#F1F5F9,stroke:#475569,stroke-width:2px,stroke-dasharray: 4;
+classDef feature fill:#E8F5E9,stroke:#16A34A,stroke-width:2px;
+classDef ranker fill:#FEF3C7,stroke:#D97706,stroke-width:3px;
+classDef business fill:#F3E8FF,stroke:#9333EA,stroke-width:2px;
+classDef final fill:#DCFCE7,stroke:#15803D,stroke-width:3px;
+
+%% 1. Input
+INPUT["🛒 Active User Cart<br/>(User ID, Restaurant ID, Cart Items)"]:::cart
+
+%% 2. Candidate Generation Layer
+subgraph L1 ["Layer 1: Candidate Retrieval Layer"]
+direction LR
+COOCCUR["Item–Item Co-Occurrence Index<br/>(Historical Transaction Graph)"]:::retrieval
+I2V["Item2Vec Embedding Search<br/>(Semantic Similarity)"]:::retrieval
+COLD["Trending & Margin-Aware Fallback<br/>(Cold-Start Strategy)"]:::retrieval
+end
+
+INPUT --> COOCCUR
+INPUT --> I2V
+INPUT -->|Cold-Start| COLD
+
+%% 3. Candidate Pool
+POOL["Union & De-duplication<br/>Top-N Candidate Pool (~50 Items)"]:::pool
+
+COOCCUR --> POOL
+I2V --> POOL
+COLD --> POOL
+
+%% 4. Feature Engineering
+subgraph L2F ["Layer 2: Feature Assembly"]
+direction LR
+U_FEAT["User Features<br/>(AOV, Preferences, Recency, Elasticity)"]:::feature
+I_FEAT["Item & Restaurant Features<br/>(Price, Popularity, Margin)"]:::feature
+C_FEAT["Cart & Context Features<br/>(Meal Stage, Hour Bucket, Weekend Flag)"]:::feature
+end
+
+POOL --> U_FEAT
+POOL --> I_FEAT
+POOL --> C_FEAT
+
+%% 5. ML Ranking
+subgraph L2R ["Layer 3: ML Ranking (LightGBM LambdaRank)"]
+LGBM(("🌲 Gradient Boosted Ranking Model<br/>(Optimized for NDCG@K)")):::ranker
+SCORED["Ranked Candidate List<br/>Sorted by Add-to-Cart Probability"]:::ranker
+end
+
+U_FEAT --> LGBM
+I_FEAT --> LGBM
+C_FEAT --> LGBM
+LGBM --> SCORED
+
+%% 6. Business Re-Ranking
+subgraph L3 ["Layer 4: Business Constraint Re-Ranker"]
+direction TB
+FILTER["Remove Cart Duplicates"]:::business
+DIVERSITY["Category Diversity Control<br/>(Max 2 per Category)"]:::business
+MARGIN["Margin-Aware Strategic Boost"]:::business
+REDUNDANCY["Redundancy Penalty"]:::business
+end
+
+SCORED --> FILTER
+FILTER --> DIVERSITY
+DIVERSITY --> MARGIN
+MARGIN --> REDUNDANCY
+
+%% 7. Output
+OUTPUT["🚀 Final Top-K Recommendations<br/>(Cart Super Add-On Rail)"]:::final
+
+REDUNDANCY --> OUTPUT
+        </div>
+    </div>
+
+</body>
+
+</html>

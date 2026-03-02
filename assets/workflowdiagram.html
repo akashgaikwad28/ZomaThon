@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ZomaThon – System Workflow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "neutral",
+            flowchart: {
+                curve: "basis",
+                padding: 20
+            }
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>ZomaThon Recommendation System Workflow</h1>
+        <div class="subtitle">
+            End-to-End Architecture: Data → Training → Inference → Evaluation
+        </div>
+
+        <div class="mermaid">
+flowchart LR
+
+%% Styles
+classDef data fill:#E8F1FF,stroke:#2563EB,stroke-width:2px;
+classDef train fill:#FFF4E5,stroke:#D97706,stroke-width:2px;
+classDef online fill:#E8F8F0,stroke:#15803D,stroke-width:2px;
+classDef eval fill:#F3E8FF,stroke:#7C3AED,stroke-width:2px;
+classDef store fill:#F1F5F9,stroke:#64748B,stroke-width:1px;
+
+%% 1. Data Layer
+subgraph A["Offline Data & Feature Engineering"]
+    DG["Advanced Data Generator<br/>(Users, Restaurants, Orders)"]:::data
+    RAW[(Raw Data Store<br/>Parquet Files)]:::store
+    PRE["Preprocessing Pipeline<br/>Feature Engineering"]:::data
+    FS[(Feature Store<br/>User & Item Features)]:::store
+
+    DG --> RAW --> PRE --> FS
+end
+
+%% 2. Training Layer
+subgraph B["Model Training Pipeline"]
+    I2V["Item2Vec Embedding Training"]:::train
+    RET["Co-Occurrence Candidate Index"]:::train
+    LGBM["LightGBM LambdaRank Model"]:::train
+    ART[(Model Artifacts<br/>Serialized Weights)]:::store
+
+    FS --> I2V
+    FS --> RET
+    FS --> LGBM
+
+    I2V --> ART
+    RET --> ART
+    LGBM --> ART
+end
+
+%% 3. Online Inference
+subgraph C["Online Real-Time Inference (FastAPI)"]
+    REQ([User Cart Request]):::online
+    CAND["Candidate Retrieval<br/>(Redis Top-K)"]:::online
+    FEAT["Feature Assembly Layer"]:::online
+    RANK["ML Ranking Layer"]:::online
+    RULE["Business Rule Re-Ranker"]:::online
+    LLM["LLM Explanation Generator"]:::online
+    RESP([Top 8 Recommendations]):::online
+
+    REQ --> CAND --> FEAT --> RANK --> RULE --> LLM --> RESP
+end
+
+%% 4. Evaluation Layer
+subgraph D["Offline Evaluation & Business Simulation"]
+    EVAL["Evaluation Pipeline<br/>Holdout Dataset"]:::eval
+    MET["NDCG@8 • Precision@8"]:::eval
+    AOV["AOV Lift Simulation"]:::eval
+    REP[(Evaluation Report JSON)]:::store
+
+    FS --> EVAL
+    ART --> EVAL
+    EVAL --> MET --> AOV --> REP
+end
+
+%% Connections
+A --> B
+B --> C
+B --> D
+
+        </div>
+    </div>
+
+</body>
+</html>

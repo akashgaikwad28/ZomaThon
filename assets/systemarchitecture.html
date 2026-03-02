@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ZomaThon – System Architecture</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Mermaid -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "neutral",
+            flowchart: {
+                curve: "basis",
+                padding: 20
+            }
+        });
+    </script>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 60px auto;
+            padding: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>ZomaThon System Architecture (Deployment Topology)</h1>
+        <div class="subtitle">
+            High-Level Infrastructure View: Clients → Network → Compute → Data & External Services
+        </div>
+
+        <div class="mermaid">
+            flowchart TD
+
+            %% Styles
+            classDef client fill:#E8F1FF,stroke:#2563EB,stroke-width:2px;
+            classDef network fill:#F1F5F9,stroke:#64748B,stroke-width:2px;
+            classDef compute fill:#E8F8F0,stroke:#15803D,stroke-width:2px;
+            classDef store fill:#FFF4E5,stroke:#D97706,stroke-width:2px;
+            classDef ext fill:#F3E8FF,stroke:#7C3AED,stroke-width:2px;
+            classDef obs fill:#FEF2F2,stroke:#DC2626,stroke-width:2px;
+
+            %% Client & Network
+            CLIENT([Mobile App / Web UI]):::client
+            LB{{"Load Balancer / Ingress"}}:::network
+
+            CLIENT -->|"POST /api/v1/recommend"| LB
+
+            %% Compute
+            subgraph DOCKER ["Docker Container Edge / Kubernetes (Compute Layer)"]
+            direction TB
+            UVICORN{{"Uvicorn (ASGI Server)"}}:::compute
+            FASTAPI["FastAPI Recommendation Engine"]:::compute
+
+            UVICORN --> FASTAPI
+            end
+
+            LB -->|"HTTP Traffic (Round Robin)"| UVICORN
+
+            %% Data Stores
+            subgraph CACHE ["Cache Layer"]
+            REDIS[("Redis Server<br />(Candidate Index & LLM Cache)")]:::store
+            end
+
+            subgraph PERSISTENT ["Persistent Storage Layer"]
+            FEAT[("Feature Store<br />(PostgreSQL / Parquet)")]:::store
+            MODEL[("Model Artifact Store<br />(LightGBM & Gensim .pkl)")]:::store
+            end
+
+            %% External APIs
+            subgraph EXT ["External Services"]
+            LLM[["GenAI LLM API<br />(Gemini / Groq)"]]:::ext
+            end
+
+            %% Observability
+            subgraph OBS ["Observability Stack"]
+            LOGS[("JSON Structured Logs<br />(app.log)")]:::obs
+            MONITOR[["Datadog / ELK Stack"]]:::obs
+            LOGS -.->|"Filebeat Trace Extraction"| MONITOR
+            end
+
+            %% Connections
+            FASTAPI <-->|"1. O(1) Candidate Retrieval"| REDIS
+                FASTAPI -->|"2. Load User/Item Features"| FEAT
+                FASTAPI -->|"3. Load ML Parameters"| MODEL
+                FASTAPI <-->|"4. Async HTTP Background Task"| LLM
+                    FASTAPI -.->|"Async Rotating Write"| LOGS
+
+        </div>
+    </div>
+
+</body>
+
+</html>

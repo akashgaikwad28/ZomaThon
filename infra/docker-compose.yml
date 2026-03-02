@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  zomathon-api:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data:/app/data
+    environment:
+      - ENV=production
+      - DATABASE_URL=postgresql://postgres:zomathon123@postgres:5432/zomathon_db
+      - REDIS_HOST=redis
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=zomathon123
+      - POSTGRES_DB=zomathon_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+volumes:
+  pgdata:
