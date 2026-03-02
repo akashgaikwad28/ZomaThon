@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Zomato_logo.svg" width="300" alt="Zomato Logo"/>
+  <img src="assets/zomathon_logo.png" width="800" alt="Zomathon Logo"/>
 </p>
 
 <p align="center">
