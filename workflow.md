@@ -4,7 +4,7 @@ This document provides a rigorous technical breakdown of the four distinct opera
 
 ## End-to-End Workflow Diagram
 
-<iframe src="assets/workflowdiagram.html" width="100%" height="800px" style="border:none;"></iframe>
+<iframe src="assets/workflow.png" width="100%" height="800px" style="border:none;"></iframe>
 
 ---
 

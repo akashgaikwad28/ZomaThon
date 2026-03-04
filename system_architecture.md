@@ -4,7 +4,7 @@ This document provides an exhaustive technical breakdown of the physical infrast
 
 ## High-Level Infrastructure Topology
 
-<iframe src="assets/systemarchitecture.html" width="100%" height="800px" style="border:none;"></iframe>
+<iframe src="assets/system_architracture.png" width="100%" height="800px" style="border:none;"></iframe>
 
 ---
 
