@@ -4,7 +4,7 @@ This document provides an exhaustive technical breakdown of the 4-layer funnel a
 
 ## The 4-Layer Funnel Diagram
 
-<iframe src="assets/model_architracture.png" width="100%" height="800px" style="border:none;"></iframe>
+![ML Model Architecture](assets/model_architracture.png)
 
 ---
 
