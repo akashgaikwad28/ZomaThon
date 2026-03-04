@@ -4,7 +4,7 @@ This document provides a rigorous technical breakdown of the four distinct opera
 
 ## End-to-End Workflow Diagram
 
-[Open End-to-End Workflow Diagram (Interactive HTML)](assets/workflowdiagram.html)
+<iframe src="assets/workflowdiagram.html" width="100%" height="800px" style="border:none;"></iframe>
 
 ---
 
