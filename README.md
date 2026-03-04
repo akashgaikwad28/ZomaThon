@@ -148,7 +148,7 @@ ZomaThon/
 To observe the exploratory workflows, modeling iterations, and massive engineering rigor that led to this pipeline, review the following:
 
 **Interactive Architecture Diagrams:**
-- [Deployment System Architecture](system_architecture.md)
+- [System Architecture](system_architecture.md)
 - [ML Model Funnel Architecture](model_architecture.md)
 - [End-to-End Workflow](workflow.md)
 
